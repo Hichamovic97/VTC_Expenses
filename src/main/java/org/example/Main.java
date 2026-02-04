@@ -1,49 +1,54 @@
 package org.example;
 
+import java.time.LocalDate;
 import java.util.Scanner;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
     public static void main(String[] args) {
-
-        boolean quitter=false;
-        int choix;
+        ExpenseTracker tracker = new ExpenseTracker();
         Scanner sc = new Scanner(System.in);
-        while(!quitter){
+        boolean quitter = false;
+
+        // Quelques données de test pour voir le résultat immédiatement (Optionnel)
+        tracker.addExpenses(new Expenses(500, "Essence", LocalDate.of(2026, 2, 1)));
+        tracker.addExpenses(new Expenses(300, "Reparation", LocalDate.of(2026, 2, 5)));
+        tracker.addExpenses(new Expenses(200, "Assurance", LocalDate.of(2026, 2, 10)));
+
+        while (!quitter) {
             System.out.println("\n--- MENU UBER EXPENSES ---");
-            System.out.println("1. Ajouter une dépense");
-            System.out.println("2. Supprimer une dépense");
-            System.out.println("3. Calculer total annuel");
-            System.out.println("4. Quitter");
-            System.out.print("Choisie une Option : ");
-choix = sc.nextInt();
-switch (choix){
-    case 1:
+            System.out.println("1. Ajouter dépense");
+            System.out.println("2. Afficher toutes les dépenses");
+            System.out.println("3. Supprimer une dépense");
+            System.out.println("4. RÉCAPITULATIF AVEC % (Par catégorie)");
+            System.out.println("5. Quitter");
+            System.out.print("Choix : ");
 
-        System.out.print("Montant : ");
-        double m = sc.nextDouble();
-        sc.nextLine();
-        System.out.print("Catégorie (Essence, Entretien...) : ");
-        String c = sc.nextLine();
-        // On utilise la date d'aujourd'hui par défaut pour simplifier
-        tracker.ajouter(new Expenses(m, c, LocalDate.now()));
-        break;
-    case 2:
-        tracker.afficherTout();
-        System.out.print("Index à supprimer : ");
-        tracker.supprimer(sc.nextInt());
-        break;
-    case 3:
-        System.out.print("Année (ex: 2026) : ");
-        int an = sc.nextInt();
-        System.out.println("Total pour " + an + " : " + tracker.calculerTotalAnnee(an) + "$");
-        break;
-    case 4:
-        quitter = true;
-        break;
-}
+            int choix = sc.nextInt();
+            switch (choix) {
+                case 1:
+                    System.out.print("Montant : ");
+                    double m = sc.nextDouble(); sc.nextLine();
+                    System.out.print("Catégorie : ");
+                    String c = sc.nextLine();
+                    tracker.addExpenses(new Expenses(m, c, LocalDate.now()));
+                    break;
+                case 2:
+                    tracker.afficherTout();
+                    break;
+                case 3:
+                    System.out.print("Index à supprimer : ");
+                    tracker.deleteExpenses(sc.nextInt());
+                    break;
+                case 4:
+                    System.out.print("Entrez le mois (1-12) : ");
+                    int mois = sc.nextInt();
+                    tracker.afficherTotalParCategorie(2026, mois);
+                    break;
+                case 5:
+                    quitter = true;
+                    break;
+            }
         }
-
+        sc.close();
     }
 }
