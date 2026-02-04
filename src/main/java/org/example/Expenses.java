@@ -1,27 +1,27 @@
 package org.example;
-
 import java.time.LocalDate;
 
 public class Expenses {
     private double montant;
-    private String categorie;
+    private Categorie categorie;
+    private String commentaire;
     private LocalDate date;
 
-    public Expenses(double montant, String categorie, LocalDate date) {
-        if (montant < 0) {
-            throw new IllegalArgumentException("Le montant ne peut pas être négatif.");
-        }
+    public Expenses(double montant, Categorie categorie, String commentaire, LocalDate date) {
         this.montant = montant;
         this.categorie = categorie;
+        this.commentaire = commentaire;
         this.date = date;
     }
 
     public double getMontant() { return montant; }
-    public String getCategorie() { return categorie; }
+    public Categorie getCategorie() { return categorie; }
+    public String getCommentaire() { return commentaire; }
     public LocalDate getDate() { return date; }
 
     @Override
     public String toString() {
-        return date + " | " + categorie + " | " + montant + "$";
+        String catNom = (categorie == Categorie.AUTRE) ? commentaire : categorie.getNom();
+        return date + " | " + catNom + " | " + montant + "$";
     }
 }

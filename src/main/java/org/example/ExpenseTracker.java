@@ -6,49 +6,62 @@ import java.util.List;
 import java.util.Map;
 
 public class ExpenseTracker {
-    private List<Expenses> liste = new ArrayList<>();
+    private List<Expenses> depenses = new ArrayList<>();
+    private List<Revenue> revenus = new ArrayList<>();
 
-    public void addExpenses(Expenses expenses) {
-        liste.add(expenses);
-        System.out.println("Ajouté !");
+    public void addExpense(Expenses e) { depenses.add(e); }
+
+    public void addRevenue(double montant, int mois) {
+        revenus.add(new Revenue(montant, java.time.LocalDate.of(2026, mois, 1)));
     }
 
-    public void deleteExpenses(int index) {
-        if (index >= 0 && index < liste.size()) liste.remove(index);
+    public void modifierRevenue(int index, double nouveauMontant) {
+        if (index >= 0 && index < revenus.size()) {
+            revenus.get(index).setMontant(nouveauMontant);
+        }
     }
 
-    public void afficherTout() {
-        for (int i = 0; i < liste.size(); i++) System.out.println(i + " - " + liste.get(i));
+    public void afficherTousRevenus() {
+        if (revenus.isEmpty()) System.out.println("Aucun revenu.");
+        for (int i = 0; i < revenus.size(); i++) {
+            System.out.println(i + " - " + revenus.get(i));
+        }
     }
 
-    public void afficherTotalParCategorie(int annee, int mois) {
-        Map<String, Double> totauxParCat = new HashMap<>();
-        double totalGlobalMois = 0;
+    public void deleteExpense(int index) {
+        if (index >= 0 && index < depenses.size()) depenses.remove(index);
+    }
 
-        // 1. On filtre et on cumule
-        for (Expenses e : liste) {
+    public void afficherToutesDepenses() {
+        for (int i = 0; i < depenses.size(); i++) System.out.println(i + " - " + depenses.get(i));
+    }
+
+    public void afficherBilanMensuel(int annee, int mois) {
+        double totalRevenus = revenus.stream()
+                .filter(r -> r.getDate().getYear() == annee && r.getDate().getMonthValue() == mois)
+                .mapToDouble(Revenue::getMontant).sum();
+
+        double sommeDepenses = 0; // Variable temporaire pour le calcul
+        Map<String, Double> parCat = new HashMap<>();
+
+        for (Expenses e : depenses) {
             if (e.getDate().getYear() == annee && e.getDate().getMonthValue() == mois) {
-                totauxParCat.put(e.getCategorie(), totauxParCat.getOrDefault(e.getCategorie(), 0.0) + e.getMontant());
-                totalGlobalMois += e.getMontant();
+                sommeDepenses += e.getMontant();
+                String nomCat = (e.getCategorie() == Categorie.AUTRE) ? e.getCommentaire() : e.getCategorie().getNom();
+                parCat.put(nomCat, parCat.getOrDefault(nomCat, 0.0) + e.getMontant());
             }
         }
 
-        if (totalGlobalMois == 0) {
-            System.out.println("Aucune donnée pour ce mois.");
-            return;
-        }
+        final double totalFinalDepenses = sommeDepenses; // On crée une variable finale pour la Lambda
 
-        // 2. Affichage avec calcul du pourcentage
-        System.out.println("\n--- RÉCAPITULATIF DÉTAILLÉ (" + mois + "/" + annee + ") ---");
-        System.out.println("Dépenses totales : " + totalGlobalMois + "$");
-        System.out.println("------------------------------------------");
+        System.out.println("\n===== BILAN UBER PRO " + mois + "/" + annee + " =====");
+        System.out.printf("REVENUS : %.2f$ | DÉPENSES : %.2f$ | NET : %.2f$\n", totalRevenus, totalFinalDepenses, (totalRevenus - totalFinalDepenses));
 
-        for (Map.Entry<String, Double> entry : totauxParCat.entrySet()) {
-            double montantCat = entry.getValue();
-            double pourcentage = (montantCat / totalGlobalMois) * 100;
-
-            // On affiche le nom, le montant et le % arrondi à une décimale
-            System.out.printf("%s : %.2f$ (%.1f%% des dépenses)\n", entry.getKey(), montantCat, pourcentage);
+        if (totalFinalDepenses > 0) {
+            parCat.forEach((cat, val) -> {
+                double pct = (val / totalFinalDepenses) * 100;
+                System.out.printf("- %s : %.2f$ (%.1f%%)\n", cat, val, pct);
+            });
         }
     }
 }
